@@ -2,6 +2,7 @@ import { Result } from '../../../core/Logic/Result';
 import { AggregateRoot } from '../../../core/Domain/AggregateRoot';
 import { TaskDescription } from '../Vocabulary/TaskDescription';
 import { TaskId } from '../Vocabulary/TaskId';
+import { AggregateSnapshot } from '../../../core/Domain/AggregateSnapshot';
 
 export interface TaskProps {
   id?: TaskId;
@@ -17,12 +18,12 @@ export class Task extends AggregateRoot<TaskProps> {
     super(props);
   }
 
-  public getId(): TaskId {
-    return this.props.id;
+  public static fromSnapshot(snapshot: AggregateSnapshot<TaskProps>): Task {
+    return new Task(snapshot.props);
   }
 
-  public getDescription(): TaskDescription {
-    return this.props.description;
+  public toSnapshot(): AggregateSnapshot<TaskProps> {
+    return new AggregateSnapshot<TaskProps>(this.props);
   }
 
   public static create(props: TaskProps): Result<Task> {

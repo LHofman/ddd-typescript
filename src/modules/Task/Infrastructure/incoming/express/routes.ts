@@ -60,7 +60,7 @@ router.post('/', (req, res) => {
 
     const task = taskOrError.getValue();
 
-    res.send({ id: task.getId().getId() });
+    res.send({ id: task.toSnapshot().props.id.getId() });
   });
 });
 
