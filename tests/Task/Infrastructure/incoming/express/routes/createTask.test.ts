@@ -7,5 +7,8 @@ describe('Create task', () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toBeInstanceOf(Object);
     expect(isNaN(res.body.id)).toBeFalsy();
+
+    const tasksRes = await request(app).get('/tasks');
+    expect(tasksRes.body.at(-1).status).toBe('To Do');
   })
 });

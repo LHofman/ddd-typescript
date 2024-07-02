@@ -6,6 +6,7 @@ import { TaskDescription } from '../../../../Vocabulary/TaskDescription';
 import { TaskId } from '../../../../Vocabulary/TaskId';
 import { RawTask, tasksData } from '../data/tasks';
 import { AggregateSnapshot } from '../../../../../../core/Domain/AggregateSnapshot';
+import { TaskStatusFactory } from '../../../../Domain/Task/TaskStatus/TaskStatusFactory';
 
 export class TaskRepository implements ITaskRepository {
   public async getTaskById(taskId: TaskId): Promise<Maybe<Task>> {
@@ -57,6 +58,7 @@ export class TaskRepository implements ITaskRepository {
     return {
       id: taskProps.id?.getId(),
       description: taskProps.description.getDescription(),
+      status: taskProps.status.getRaw(),
     };
   }
 
@@ -64,6 +66,7 @@ export class TaskRepository implements ITaskRepository {
     const taskProps: TaskProps = {
       id: TaskId.create(data.id).getValue(),
       description: TaskDescription.create(data.description).getValue(),
+      status: TaskStatusFactory.create(data.status).getValue(),
     };
     const taskSnapshot = new AggregateSnapshot<TaskProps>(taskProps);
     return Task.fromSnapshot(taskSnapshot);

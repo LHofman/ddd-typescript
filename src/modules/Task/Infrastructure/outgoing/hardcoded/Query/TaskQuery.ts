@@ -2,7 +2,7 @@ import { Maybe } from '../../../../../../types';
 import { TaskDTO } from '../../../../Application/Port/DTO/Api/TaskDTO';
 import { ITaskQuery } from '../../../../Application/Port/Query/Api/ITaskQuery';
 import { TaskId } from '../../../../Vocabulary/TaskId';
-import { tasksData } from '../data/tasks';
+import { RawTask, tasksData } from '../data/tasks';
 
 export class TaskQuery implements ITaskQuery {
   public async findAll(): Promise<TaskDTO[]> {
@@ -18,10 +18,11 @@ export class TaskQuery implements ITaskQuery {
     return this.toTaskDTO(task);
   }
 
-  private toTaskDTO(task): TaskDTO {
+  private toTaskDTO(task: RawTask): TaskDTO {
     return {
       id: task.id,
       description: task.description,
+      status: task.status,
     };
   }
 }

@@ -1,23 +1,34 @@
 export interface RawTask {
   id: number;
   description: string;
+  status: RawTaskStatus;
+}
+
+export enum RawTaskStatus {
+  ToDo = 'To Do',
+  InProgress = 'In Progress',
+  WaitingForStart = 'Waiting for Start'
 }
 
 export const tasksData: RawTask[] = [
   {
-    'id': 1,
-    'description': 'Software Engineer'
+    id: 1,
+    description: 'Build House',
+    status: RawTaskStatus.InProgress,
   },
   {
-    'id': 2,
-    'description': 'Software Architect'
+    id: 2,
+    description: 'Watch Criminal Minds',
+    status: RawTaskStatus.InProgress,
   },
   {
-    'id': 3,
-    'description': 'DevOps Engineer'
+    id: 3,
+    description: 'Watch Deadpool and Wolverine',
+    status: RawTaskStatus.WaitingForStart,
   },
   {
-    'id': 4,
-    'description': 'QA Engineer'
-  }
+    id: 4,
+    description: 'Get a Haircut',
+    status: RawTaskStatus.ToDo,
+  },
 ];
