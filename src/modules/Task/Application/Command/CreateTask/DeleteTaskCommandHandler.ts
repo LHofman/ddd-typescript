@@ -7,7 +7,7 @@ import { IDeleteTaskCommandHandler } from '../../Port/Command/DeleteTask/IDelete
 export class DeleteTaskCommandHandler implements IDeleteTaskCommandHandler {
   constructor(private taskRepository: ITaskRepository) {}
 
-  public async handle(command: DeleteTaskCommandDTO): Promise<Result<null>> {
+  public async handle(command: DeleteTaskCommandDTO): Promise<Result<void>> {
     // Parse Task Id
     const taskIdOrError = TaskId.create(command.id);
     if (taskIdOrError.isFailure) {
@@ -21,6 +21,6 @@ export class DeleteTaskCommandHandler implements IDeleteTaskCommandHandler {
       return Result.fail<null>(deleteResult.getErrors());
     }
 
-    return Result.ok(null);
+    return Result.ok();
   }
 }

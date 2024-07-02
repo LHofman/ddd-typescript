@@ -11,16 +11,14 @@ import { DeleteTaskCommandDTO } from '../../../Application/Port/Command/DeleteTa
 
 const router = express.Router();
 
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   const taskQuery = new TaskQuery();
 
-  const tasksPromise = taskQuery.findAll();
-  tasksPromise.then((tasks) => {
-    res.send(tasks);
-  });
+  const tasks = await taskQuery.findAll();
+  res.send(tasks);
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', async (req, res) => {
   const taskQuery = new TaskQuery();
 
   if (isNaN(Number(req.params.id))) {
@@ -34,37 +32,53 @@ router.get('/:id', (req, res) => {
     return;
   }
 
-  const taskPromise = taskQuery.findById(taskIdOrError.getValue());
-  taskPromise.then((task) => {
-    if (!task) {
-      res.status(404).send('Invalid ID');
-      return;
-    }
+  const task = await taskQuery.findById(taskIdOrError.getValue());
+  if (!task) {
+    res.status(404).send('Invalid ID');
+    return;
+  }
 
-    res.send(task);
-  });
+  res.send(task);
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   const createTaskCommandHandler = new CreateTaskCommandHandler(new TaskRepository());
 
   const createTaskCommandDTO: CreateTaskCommandDTO = {
     description: req.body.description,
   };
 
-  const taskPromise = createTaskCommandHandler.handle(createTaskCommandDTO);
-  taskPromise.then((taskOrError) => {
-    if (taskOrError.isFailure) {
-      res.status(400).send(taskOrError.getErrors());
-    }
+  const taskOrError = await createTaskCommandHandler.handle(createTaskCommandDTO);
+  if (taskOrError.isFailure) {
+    res.status(400).send(taskOrError.getErrors());
+  }
 
-    const task = taskOrError.getValue();
+  const task = taskOrError.getValue();
 
-    res.send({ id: task.toSnapshot().props.id.getId() });
-  });
+  res.send({ id: task.toSnapshot().props.id.getId() });
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id/start', async (req, res) => {
+  const updateTaskCommandHandler = new UpdateTaskCommandHandler(new TaskRepository());
+
+  let taskId: number;
+  try {
+    taskId = parseInt(req.params.id);
+  } catch (e) {
+    res.status(400).send('Invalid ID');
+    return;
+  }
+
+  const result = await updateTaskCommandHandler.start(taskId);
+  if (result.isFailure) {
+    res.status(400).send(result.getErrors().join(', '));
+    return;
+  }
+
+  res.send('Task successfully started');
+});
+
+router.put('/:id', async (req, res) => {
   const updateTaskCommandHandler = new UpdateTaskCommandHandler(new TaskRepository());
 
   let updateTaskCommandDTO: UpdateTaskCommandDTO;
@@ -78,14 +92,12 @@ router.put('/:id', (req, res) => {
     return;
   }
 
-  const taskPromise = updateTaskCommandHandler.handle(updateTaskCommandDTO);
-  taskPromise.then((taskOrError) => {
-    if (taskOrError.isFailure) {
-      res.status(400).send(taskOrError.getErrors());
-    }
+  const result = await updateTaskCommandHandler.handle(updateTaskCommandDTO);
+  if (result.isFailure) {
+    res.status(400).send(result.getErrors().join(', '));
+  }
 
-    res.send('Task successfully updated');
-  });
+  res.send('Task successfully updated');
 });
 
 router.delete('/:id', (req, res) => {

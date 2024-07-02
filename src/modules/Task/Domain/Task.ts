@@ -4,13 +4,13 @@ import { TaskDescription } from '../Vocabulary/TaskDescription';
 import { TaskId } from '../Vocabulary/TaskId';
 import { AggregateSnapshot } from '../../../core/Domain/AggregateSnapshot';
 import { RawTaskStatus } from '../Infrastructure/outgoing/hardcoded/data/tasks';
-import { ITaskStatus } from './Task/TaskStatus/ITaskStatus';
+import { TaskStatus } from './Task/TaskStatus/TaskStatus';
 import { ToDo } from './Task/TaskStatus/ToDo';
 
 export interface TaskProps {
   id?: TaskId;
   description: TaskDescription;
-  status: ITaskStatus;
+  status: TaskStatus;
 }
 
 export interface CreateTaskProps {
@@ -45,6 +45,17 @@ export class Task extends AggregateRoot<TaskProps> {
 
   public update(props: UpdateTaskProps): Result<void> {
     this.props.description = props.description;
+
+    return Result.ok();
+  }
+
+  public start(): Result<void> {
+    const statusResult = this.props.status.start();
+    if (statusResult.isFailure) {
+      return Result.fail(statusResult.getErrors());
+    }
+
+    this.props.status = statusResult.getValue();
 
     return Result.ok();
   }

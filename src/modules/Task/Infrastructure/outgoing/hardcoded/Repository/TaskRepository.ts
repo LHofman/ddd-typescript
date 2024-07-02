@@ -39,14 +39,14 @@ export class TaskRepository implements ITaskRepository {
     return this.mapDataToTask(tasksData.find(j => j.id === newTaskId));
   }
 
-  public async deleteTaskById(taskId: TaskId): Promise<Result<null>> {
+  public async deleteTaskById(taskId: TaskId): Promise<Result<void>> {
     if (!await this.exists(taskId)) {
       return Result.fail<null>('Task not found');
     }
 
     tasksData.splice(tasksData.findIndex(j => j.id === taskId.getId()), 1);
 
-    return Result.ok(null);
+    return Result.ok();
   }
 
   private async exists(taskId: TaskId): Promise<boolean> {

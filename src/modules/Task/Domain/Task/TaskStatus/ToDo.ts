@@ -1,8 +1,14 @@
+import { Result } from "../../../../../core/Logic/Result";
 import { RawTaskStatus } from "../../../Infrastructure/outgoing/hardcoded/data/tasks";
-import { ITaskStatus } from "./ITaskStatus";
+import { InProgress } from "./InProgress";
+import { TaskStatus } from "./TaskStatus";
 
-export class ToDo implements ITaskStatus {
-  getRaw(): RawTaskStatus {
-    return RawTaskStatus.ToDo;
+export class ToDo extends TaskStatus {
+  constructor() {
+    super(RawTaskStatus.ToDo);
+  }
+
+  public start(): Result<TaskStatus> {
+    return Result.ok(new InProgress());
   }
 }

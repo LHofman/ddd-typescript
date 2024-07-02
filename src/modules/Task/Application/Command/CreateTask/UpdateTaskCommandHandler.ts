@@ -5,6 +5,7 @@ import { TaskDescription } from '../../../Vocabulary/TaskDescription';
 import { TaskId } from '../../../Vocabulary/TaskId';
 import { IUpdateTaskCommandHandler } from '../../Port/Command/UpdateTask/IUpdateTaskCommandHandler';
 import { UpdateTaskCommandDTO } from '../../Port/Command/UpdateTask/UpdateTaskCommandDTO';
+import { TaskStatus } from '../../../Domain/Task/TaskStatus/TaskStatus';
 
 interface TaskProps {
   description?: TaskDescription;
@@ -13,36 +14,64 @@ interface TaskProps {
 export class UpdateTaskCommandHandler implements IUpdateTaskCommandHandler {
   constructor(private taskRepository: ITaskRepository) {}
 
-  public async handle(command: UpdateTaskCommandDTO): Promise<Result<Task>> {
-    // Parse Task Id
-    const taskIdOrError = TaskId.create(command.id);
-    if (taskIdOrError.isFailure) {
-      return Result.fail<Task>(taskIdOrError.getErrors());
+  public async handle(command: UpdateTaskCommandDTO): Promise<Result<void>> {
+    const taskResult = await this.getTaskAggregateResult(command.id);
+    if (taskResult.isFailure) {
+      return Result.fail(taskResult.getErrors());
     }
-    const taskId = taskIdOrError.getValue();
-
-    // Fetch Aggregate
-    let task = await this.taskRepository.getTaskById(taskId);
-    if (!task) {
-      return Result.fail<Task>('Task not found');
-    }
+    let task = taskResult.getValue();
     
     // Validate Task Props
     const taskPropsOrError = this.validateTaskProps(command);
     if (taskPropsOrError.isFailure) {
-      return Result.fail<Task>(taskPropsOrError.getErrors());
+      return Result.fail(taskPropsOrError.getErrors());
     }
     const taskProps = taskPropsOrError.getValue();
 
     // Update Aggregate
     const result = task.update(taskProps);
     if (result.isFailure) {
-      return Result.fail<Task>(result.getErrors());
+      return Result.fail(result.getErrors());
     }
 
     task = await this.taskRepository.save(task);
 
-    return Result.ok(task);
+    return Result.ok();
+  }
+
+  public async start(id: number): Promise<Result<void>> {
+    const taskResult = await this.getTaskAggregateResult(id);
+    if (taskResult.isFailure) {
+      return Result.fail(taskResult.getErrors());
+    }
+    const task = taskResult.getValue();
+    
+    // Update Aggregate
+    const result = task.start();
+    if (result.isFailure) {
+      return Result.fail(result.getErrors());
+    }
+
+    await this.taskRepository.save(task);
+
+    return Result.ok();
+  }
+
+  private async getTaskAggregateResult(id: number): Promise<Result<Task>> {
+    // Parse Task Id
+    const taskIdOrError = TaskId.create(id);
+    if (taskIdOrError.isFailure) {
+      return Result.fail<Task>(taskIdOrError.getErrors());
+    }
+    const taskId = taskIdOrError.getValue();
+
+    // Fetch Aggregate
+    const task = await this.taskRepository.getTaskById(taskId);
+    if (!task) {
+      return Result.fail<Task>('Task not found');
+    }
+
+    return Result.ok<Task>(task);
   }
 
   private validateTaskProps(command: UpdateTaskCommandDTO): Result<TaskProps> {

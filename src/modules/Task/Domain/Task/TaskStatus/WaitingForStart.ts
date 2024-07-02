@@ -1,8 +1,8 @@
 import { RawTaskStatus } from "../../../Infrastructure/outgoing/hardcoded/data/tasks";
-import { ITaskStatus } from "./ITaskStatus";
+import { TaskStatus } from "./TaskStatus";
 
-export class WaitingForStart implements ITaskStatus {
-  getRaw(): RawTaskStatus {
-    return RawTaskStatus.WaitingForStart;
+export class WaitingForStart extends TaskStatus {
+  constructor() {
+    super(RawTaskStatus.WaitingForStart);
   }
 }

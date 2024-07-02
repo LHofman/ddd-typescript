@@ -11,5 +11,5 @@ describe('Update task', () => {
     expect(getRes.statusCode).toEqual(200);
     expect(getRes.body).toBeInstanceOf(Object);
     expect(getRes.body.description).toEqual('updated description');
-  })
+  });
 });

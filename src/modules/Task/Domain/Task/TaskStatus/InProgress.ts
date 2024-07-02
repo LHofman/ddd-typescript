@@ -1,8 +1,8 @@
 import { RawTaskStatus } from "../../../Infrastructure/outgoing/hardcoded/data/tasks";
-import { ITaskStatus } from "./ITaskStatus";
+import { TaskStatus } from "./TaskStatus";
 
-export class InProgress implements ITaskStatus {
-  getRaw(): RawTaskStatus {
-    return RawTaskStatus.InProgress;
+export class InProgress extends TaskStatus {
+  constructor() {
+    super(RawTaskStatus.InProgress);
   }
 }
