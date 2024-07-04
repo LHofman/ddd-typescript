@@ -3,9 +3,9 @@ import { AggregateRoot } from '../../../core/Domain/AggregateRoot';
 import { TaskDescription } from '../Vocabulary/TaskDescription';
 import { TaskId } from '../Vocabulary/TaskId';
 import { AggregateSnapshot } from '../../../core/Domain/AggregateSnapshot';
-import { RawTaskStatus } from '../Infrastructure/outgoing/hardcoded/data/tasks';
 import { TaskStatus } from './Task/TaskStatus/TaskStatus';
 import { ToDo } from './Task/TaskStatus/ToDo';
+import { RawTaskStatus } from '../Infrastructure/outgoing/hardcoded/data/tasks';
 
 export interface TaskProps {
   id?: TaskId;
@@ -50,7 +50,15 @@ export class Task extends AggregateRoot<TaskProps> {
   }
 
   public start(): Result<void> {
-    const statusResult = this.props.status.start();
+    return this.updateStatus((status) => status.start());
+  }
+
+  public complete(): Result<void> {
+    return this.updateStatus((status) => status.complete());
+  }
+
+  private updateStatus(callback: (TaskStatus) => Result<TaskStatus>): Result<void> {
+    const statusResult = callback(this.props.status);
     if (statusResult.isFailure) {
       return Result.fail(statusResult.getErrors());
     }

@@ -5,30 +5,31 @@ export interface RawTask {
 }
 
 export enum RawTaskStatus {
-  ToDo = 'To Do',
-  InProgress = 'In Progress',
-  WaitingForStart = 'Waiting for Start'
+  ToDo = "To Do",
+  InProgress = "In Progress",
+  WaitingForStart = "Waiting for Start",
+  Done = "Done",
 }
 
 export const tasksData: RawTask[] = [
   {
     id: 1,
-    description: 'Build House',
+    description: "Build House",
     status: RawTaskStatus.InProgress,
   },
   {
     id: 2,
-    description: 'Watch Criminal Minds',
+    description: "Watch Criminal Minds",
     status: RawTaskStatus.InProgress,
   },
   {
     id: 3,
-    description: 'Watch Deadpool and Wolverine',
+    description: "Watch Deadpool and Wolverine",
     status: RawTaskStatus.WaitingForStart,
   },
   {
     id: 4,
-    description: 'Get a Haircut',
+    description: "Get a Haircut",
     status: RawTaskStatus.ToDo,
   },
 ];

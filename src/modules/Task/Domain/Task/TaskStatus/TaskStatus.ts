@@ -11,4 +11,8 @@ export abstract class TaskStatus {
   public start(): Result<TaskStatus> {
     return Result.fail(`A Task with Status ${this.rawStatus} cannot be started`);
   }
+
+  public complete(): Result<TaskStatus> {
+    return Result.fail(`A Task with Status ${this.rawStatus} cannot be completed`);
+  }
 }
