@@ -5,12 +5,12 @@ import { TaskId } from '../Vocabulary/TaskId';
 import { AggregateSnapshot } from '../../../core/Domain/AggregateSnapshot';
 import { TaskStatus } from './Task/TaskStatus/TaskStatus';
 import { ToDo } from './Task/TaskStatus/ToDo';
-import { RawTaskStatus } from '../Infrastructure/outgoing/hardcoded/data/tasks';
 
 export interface TaskProps {
   id?: TaskId;
   description: TaskDescription;
   status: TaskStatus;
+  subTasks?: TaskProps[];
 }
 
 export interface CreateTaskProps {
@@ -54,6 +54,11 @@ export class Task extends AggregateRoot<TaskProps> {
   }
 
   public complete(): Result<void> {
+    const hasUnfinishedSubtasks = this.props.subTasks?.some((subTask) => !subTask.status.isFinished());
+    if (hasUnfinishedSubtasks) {
+      return Result.fail('Cannot complete a Task with unfinished subtasks');  
+    }
+
     return this.updateStatus((status) => status.complete());
   }
 

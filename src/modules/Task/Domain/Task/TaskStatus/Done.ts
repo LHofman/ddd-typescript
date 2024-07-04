@@ -5,4 +5,6 @@ export class Done extends TaskStatus {
   constructor() {
     super(RawTaskStatus.Done);
   }
+
+  public isFinished = (): boolean => true;
 }

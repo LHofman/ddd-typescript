@@ -8,7 +8,5 @@ export class InProgress extends TaskStatus {
     super(RawTaskStatus.InProgress);
   }
 
-  public complete(): Result<TaskStatus> {
-    return Result.ok(new Done());
-  }
+  public complete = (): Result<TaskStatus> => Result.ok(new Done());
 }

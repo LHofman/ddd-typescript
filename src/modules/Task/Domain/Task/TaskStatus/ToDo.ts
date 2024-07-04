@@ -9,11 +9,6 @@ export class ToDo extends TaskStatus {
     super(RawTaskStatus.ToDo);
   }
 
-  public start(): Result<TaskStatus> {
-    return Result.ok(new InProgress());
-  }
-
-  public complete(): Result<TaskStatus> {
-    return Result.ok(new Done());
-  }
+  public start = (): Result<TaskStatus> => Result.ok(new InProgress());
+  public complete = (): Result<TaskStatus> => Result.ok(new Done());
 }

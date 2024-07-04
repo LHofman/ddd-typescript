@@ -4,15 +4,10 @@ import { RawTaskStatus } from "../../../Infrastructure/outgoing/hardcoded/data/t
 export abstract class TaskStatus {
   protected constructor(protected rawStatus: RawTaskStatus) {}
 
-  public getRaw(): RawTaskStatus {
-    return this.rawStatus;
-  }
+  public getRaw = (): RawTaskStatus => this.rawStatus;
 
-  public start(): Result<TaskStatus> {
-    return Result.fail(`A Task with Status ${this.rawStatus} cannot be started`);
-  }
+  public isFinished = (): boolean => false;
 
-  public complete(): Result<TaskStatus> {
-    return Result.fail(`A Task with Status ${this.rawStatus} cannot be completed`);
-  }
+  public start = (): Result<TaskStatus> => Result.fail(`A Task with Status ${this.rawStatus} cannot be started`);
+  public complete = (): Result<TaskStatus> => Result.fail(`A Task with Status ${this.rawStatus} cannot be completed`);
 }

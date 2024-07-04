@@ -34,10 +34,52 @@ describe('Complete task', () => {
     expect(result.getErrors()).toContain('A Task with Status Done cannot be completed');
     expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.Done);
   });
+
+  test('completeing a task with completed subTasks should update the status to Done', async () => {
+    const task = getTask(
+      RawTaskStatus.InProgress,
+      { subTasks: [
+        {
+          description: TaskDescription.create("Sub Task 1").getValue(),
+          status: TaskStatusFactory.create(RawTaskStatus.Done).getValue(),
+        },
+        {
+          description: TaskDescription.create("Sub Task 2").getValue(),
+          status: TaskStatusFactory.create(RawTaskStatus.Done).getValue(),
+        },
+      ] }
+    );
+
+    const result = task.complete();
+    expect(result.isFailure).toBeFalsy();
+    expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.Done);
+  });
+
+  test('completeing a task with an incomplete subTask should fail', async () => {
+    const task = getTask(
+      RawTaskStatus.InProgress,
+      { subTasks: [
+        {
+          description: TaskDescription.create("Sub Task 1").getValue(),
+          status: TaskStatusFactory.create(RawTaskStatus.Done).getValue(),
+        },
+        {
+          description: TaskDescription.create("Sub Task 2").getValue(),
+          status: TaskStatusFactory.create(RawTaskStatus.ToDo).getValue(),
+        },
+      ] }
+    );
+
+    const result = task.complete();
+    expect(result.isFailure).toBeTruthy();
+    expect(result.getErrors()).toContain('Cannot complete a Task with unfinished subtasks');
+    expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.InProgress);
+  });
 });
 
-const getTask = (status: RawTaskStatus): Task => {
+const getTask = (status: RawTaskStatus, otherProps?: Partial<TaskProps>): Task => {
   const taskProps: TaskProps = {
+    ...otherProps,
     description: TaskDescription.create("Test").getValue(),
     status: TaskStatusFactory.create(status).getValue(),
   };
