@@ -10,7 +10,7 @@ export interface TaskProps {
   id?: TaskId;
   description: TaskDescription;
   status: TaskStatus;
-  subTasks?: TaskProps[];
+  subTasks?: Task[];
 }
 
 export interface CreateTaskProps {
@@ -22,7 +22,7 @@ export interface UpdateTaskProps {
 }
 
 export class Task extends AggregateRoot<TaskProps> {
-  private constructor(props: TaskProps) {
+  protected constructor(props: TaskProps) {
     super(props);
   }
 
@@ -49,12 +49,28 @@ export class Task extends AggregateRoot<TaskProps> {
     return Result.ok();
   }
 
+  public addSubTask(subTask: Task): Result<void> {
+    const subTaskId = subTask.props.id;
+    if (!subTaskId) return Result.fail('Subtask must have an id');
+
+    const subTaskAlreadyExists = this.props.subTasks?.some(
+      (existingSubTask) => existingSubTask.props.id.getId() === subTask.props.id.getId()
+    );
+    if (subTaskAlreadyExists) return Result.fail('Subtask already exists');
+
+    if (!this.props.subTasks) this.props.subTasks = [];
+
+    this.props.subTasks.push(subTask);
+
+    return Result.ok();
+  }
+
   public start(): Result<void> {
     return this.updateStatus((status) => status.start());
   }
 
   public complete(): Result<void> {
-    const hasUnfinishedSubtasks = this.props.subTasks?.some((subTask) => !subTask.status.isFinished());
+    const hasUnfinishedSubtasks = this.props.subTasks?.some((subTask) => !subTask.isFinished());
     if (hasUnfinishedSubtasks) {
       return Result.fail('Cannot complete a Task with unfinished subtasks');  
     }
@@ -62,7 +78,11 @@ export class Task extends AggregateRoot<TaskProps> {
     return this.updateStatus((status) => status.complete());
   }
 
-  private updateStatus(callback: (TaskStatus) => Result<TaskStatus>): Result<void> {
+  public isFinished(): boolean {
+    return this.props.status.isFinished();
+  }
+
+  protected updateStatus(callback: (TaskStatus) => Result<TaskStatus>): Result<void> {
     const statusResult = callback(this.props.status);
     if (statusResult.isFailure) {
       return Result.fail(statusResult.getErrors());

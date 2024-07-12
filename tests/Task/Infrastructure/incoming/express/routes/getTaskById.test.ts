@@ -25,5 +25,7 @@ describe('Get task by id', () => {
     expect(res.statusCode).toEqual(200);
     expect(res.body).toBeInstanceOf(Object);
     expect(res.body.id).toEqual(1);
+    expect(res.body.subTasks).toBeInstanceOf(Array);
+    expect(res.body.subTasks).not.toHaveLength(0);
   });
 });

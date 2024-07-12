@@ -6,7 +6,11 @@ import { RawTask, tasksData } from '../data/tasks';
 
 export class TaskQuery implements ITaskQuery {
   public async findAll(): Promise<TaskDTO[]> {
-    return tasksData.map((task) => this.toTaskDTO(task));
+    const taskDTOs = tasksData.map((task) => this.toTaskDTO(task));
+
+    taskDTOs.forEach((taskDTO) => this.populateWithSubTasks(taskDTO));
+
+    return taskDTOs;
   }
 
   public async findById(id: TaskId): Promise<Maybe<TaskDTO>> {
@@ -15,7 +19,24 @@ export class TaskQuery implements ITaskQuery {
       return null;
     }
 
-    return this.toTaskDTO(task);
+    const taskDTO = this.toTaskDTO(task);
+
+    this.populateWithSubTasks(taskDTO);
+
+    return taskDTO;
+  }
+
+  private populateWithSubTasks(taskDTO: TaskDTO): void {
+    const subTasks = tasksData
+      .filter((task) => task.parentId === taskDTO.id)
+      .map((task) => this.toTaskDTO(task));
+    if (!subTasks.length) {
+      return;
+    }
+
+    subTasks.forEach((subTask) => this.populateWithSubTasks(subTask));
+
+    taskDTO.subTasks = subTasks;
   }
 
   private toTaskDTO(task: RawTask): TaskDTO {

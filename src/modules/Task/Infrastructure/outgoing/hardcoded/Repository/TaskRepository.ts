@@ -20,10 +20,11 @@ export class TaskRepository implements ITaskRepository {
   
   public async save(task: Task): Promise<Task> {
     const taskProps = task.toSnapshot().props;
-
     if (taskProps.id && await this.exists(taskProps.id)) {
       const taskIndex = tasksData.findIndex(j => j.id === taskProps.id?.getId());
-      tasksData[taskIndex] = this.mapTaskToData(task);
+      tasksData[taskIndex] = this.mapTaskPropsToData(taskProps);
+
+      this.saveSubTasks(taskProps.subTasks, taskProps.id);
 
       return this.mapDataToTask(tasksData[taskIndex]);
     }
@@ -32,11 +33,22 @@ export class TaskRepository implements ITaskRepository {
     const newTaskId = highestId + 1;
 
     tasksData.push({
-      ...this.mapTaskToData(task),
+      ...this.mapTaskPropsToData(taskProps),
       id: newTaskId,
     });
 
+    this.saveSubTasks(taskProps.subTasks, TaskId.create(newTaskId).getValue());
+
     return this.mapDataToTask(tasksData.find(j => j.id === newTaskId));
+  }
+
+  private async saveSubTasks(subTasks: Task[], parentId: TaskId): Promise<void> {
+    if (!subTasks) return;
+    
+    subTasks.forEach((subTask) => {
+      const subTaskIndex = tasksData.findIndex((task) => task.id === subTask.toSnapshot().props.id.getId());
+      tasksData[subTaskIndex].parentId = parentId.getId();
+    });
   }
 
   public async deleteTaskById(taskId: TaskId): Promise<Result<void>> {
@@ -53,22 +65,28 @@ export class TaskRepository implements ITaskRepository {
     return tasksData.some(j => j.id === taskId.getId());
   }
 
-  private mapTaskToData(task: Task): RawTask {
-    const taskProps = task.toSnapshot().props;
-    return {
-      id: taskProps.id?.getId(),
-      description: taskProps.description.getDescription(),
-      status: taskProps.status.getRaw(),
-    };
-  }
+  private mapTaskPropsToData = (taskProps: TaskProps): RawTask => ({
+    id: taskProps.id?.getId(),
+    description: taskProps.description.getDescription(),
+    status: taskProps.status.getRaw(),
+  });
 
   private mapDataToTask(data: RawTask): Task {
-    const taskProps: TaskProps = {
-      id: TaskId.create(data.id).getValue(),
-      description: TaskDescription.create(data.description).getValue(),
-      status: TaskStatusFactory.create(data.status).getValue(),
-    };
+    const taskProps = this.mapDataToTaskProps(data);
+
+    const subTasks = tasksData
+      .filter((task) => task.parentId === taskProps.id.getId());
+    if (subTasks.length) {
+      taskProps.subTasks = subTasks.map((task) => this.mapDataToTask(task));
+    }
+
     const taskSnapshot = new AggregateSnapshot<TaskProps>(taskProps);
     return Task.fromSnapshot(taskSnapshot);
   }
+
+  private mapDataToTaskProps = (data: RawTask): TaskProps => ({
+    id: TaskId.create(data.id).getValue(),
+    description: TaskDescription.create(data.description).getValue(),
+    status: TaskStatusFactory.create(data.status).getValue(),
+  });
 }

@@ -5,7 +5,6 @@ import { TaskDescription } from '../../../Vocabulary/TaskDescription';
 import { TaskId } from '../../../Vocabulary/TaskId';
 import { IUpdateTaskCommandHandler } from '../../Port/Command/UpdateTask/IUpdateTaskCommandHandler';
 import { UpdateTaskCommandDTO } from '../../Port/Command/UpdateTask/UpdateTaskCommandDTO';
-import { TaskStatus } from '../../../Domain/Task/TaskStatus/TaskStatus';
 
 interface TaskProps {
   description?: TaskDescription;

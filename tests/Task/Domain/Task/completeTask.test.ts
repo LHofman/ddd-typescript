@@ -3,6 +3,7 @@ import { Task, TaskProps } from '../../../../src/modules/Task/Domain/Task';
 import { TaskStatusFactory } from '../../../../src/modules/Task/Domain/Task/TaskStatus/TaskStatusFactory';
 import { RawTaskStatus } from '../../../../src/modules/Task/Infrastructure/outgoing/hardcoded/data/tasks';
 import { TaskDescription } from '../../../../src/modules/Task/Vocabulary/TaskDescription';
+import { TaskId } from '../../../../src/modules/Task/Vocabulary/TaskId';
 
 describe('Complete task', () => {
   test('completeing a task in status To Do should update the status to Done', async () => {
@@ -39,14 +40,16 @@ describe('Complete task', () => {
     const task = getTask(
       RawTaskStatus.InProgress,
       { subTasks: [
-        {
+        Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
+          id: TaskId.create(999123).getValue(),
           description: TaskDescription.create("Sub Task 1").getValue(),
           status: TaskStatusFactory.create(RawTaskStatus.Done).getValue(),
-        },
-        {
+        })),
+        Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
+          id: TaskId.create(999124).getValue(),
           description: TaskDescription.create("Sub Task 2").getValue(),
           status: TaskStatusFactory.create(RawTaskStatus.Done).getValue(),
-        },
+        })),
       ] }
     );
 
@@ -59,14 +62,16 @@ describe('Complete task', () => {
     const task = getTask(
       RawTaskStatus.InProgress,
       { subTasks: [
-        {
+        Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
+          id: TaskId.create(999123).getValue(),
           description: TaskDescription.create("Sub Task 1").getValue(),
           status: TaskStatusFactory.create(RawTaskStatus.Done).getValue(),
-        },
-        {
+        })),
+        Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
+          id: TaskId.create(999124).getValue(),
           description: TaskDescription.create("Sub Task 2").getValue(),
           status: TaskStatusFactory.create(RawTaskStatus.ToDo).getValue(),
-        },
+        })),
       ] }
     );
 
