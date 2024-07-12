@@ -9,7 +9,7 @@ export class TaskId {
 
   public static create(id: number): Result<TaskId> {
     if (id < 1) {
-      return Result.fail<TaskId>('Task Id must be greater than 0');
+      return Result.fail('Task Id must be greater than 0');
     }
 
     return Result.ok<TaskId>(new TaskId(id));

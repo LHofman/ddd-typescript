@@ -9,43 +9,31 @@ export class AddSubTaskCommandHandler implements IAddSubTaskCommandHandler {
   constructor(private taskRepository: ITaskRepository) {}
 
   public async handle(command: AddSubTaskCommandDTO): Promise<Result<void>> {
-    const taskResult = await this.getTaskAggregateResult(command.id);
-    if (taskResult.isFailure) {
-      return Result.fail(taskResult.getErrors());
+    const [taskResult, subTaskResult] = await Promise.all([
+      this.getTaskAggregateResult(command.id),
+      this.getTaskAggregateResult(command.subTaskId),
+    ]);
+
+    const combinedResult = Result.combine(taskResult, subTaskResult);
+    if (combinedResult.isFailure) {
+      return Result.fail(combinedResult.getErrors());
     }
-    let task = taskResult.getValue();
-    
-    const subTaskResult = await this.getTaskAggregateResult(command.subTaskId);
-    if (subTaskResult.isFailure) {
-      return Result.fail(subTaskResult.getErrors());
-    }
+
+    const task = taskResult.getValue();
     const subTask = subTaskResult.getValue();
-    
-    // Update Aggregate
+
     const result = task.addSubTask(subTask);
     if (result.isFailure) {
       return Result.fail(result.getErrors());
     }
 
-    task = await this.taskRepository.save(task);
+    await this.taskRepository.save(task);
 
     return Result.ok();
   }
 
   private async getTaskAggregateResult(id: number): Promise<Result<Task>> {
-    // Parse Task Id
-    const taskIdOrError = TaskId.create(id);
-    if (taskIdOrError.isFailure) {
-      return Result.fail<Task>(taskIdOrError.getErrors());
-    }
-    const taskId = taskIdOrError.getValue();
-
-    // Fetch Aggregate
-    const task = await this.taskRepository.getTaskById(taskId);
-    if (!task) {
-      return Result.fail<Task>('Task not found');
-    }
-
-    return Result.ok<Task>(task);
+    return TaskId.create(id)
+      .onSuccessAsync((taskId) => this.taskRepository.getTaskById(taskId));
   }
 }

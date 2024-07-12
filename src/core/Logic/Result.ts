@@ -11,10 +11,10 @@ export class Result<T> {
     return new Result<T>(false, value, null);
   }
 
-  public static fail<T>(errors: string | string[]) {
+  public static fail(errors: string | string[]) {
     if (!Array.isArray(errors)) errors = [errors];
 
-    return new Result<T>(true, null, errors);
+    return new Result(true, null, errors);
   }
 
   public getValue(): T {
@@ -23,5 +23,37 @@ export class Result<T> {
 
   public getErrors(): Maybe<string[]> {
     return this.errors;
+  }
+
+  public static combine(...results: Result<unknown>[]) {
+    if (!results.some((result) => result.isFailure)) {
+      return Result.ok();
+    }
+
+    const errors = results.reduce((acc, result) => {
+      if (result.isFailure) {
+        return acc.concat(result.getErrors());
+      }
+
+      return acc;
+    }, []);
+
+    return Result.fail(errors);
+  }
+
+  public onSuccess<T2>(callback: (result?: T) => Result<T2>): Result<T2> {
+    if (this.isFailure) {
+      return Result.fail(this.errors);
+    }
+
+    return callback(this.value);
+  }
+
+  public onSuccessAsync<T2>(callback: (result?: T) => Promise<Result<T2>>): Promise<Result<T2>> {
+    if (this.isFailure) {
+      return Promise.resolve(Result.fail(this.errors));
+    }
+
+    return callback(this.value);
   }
 }

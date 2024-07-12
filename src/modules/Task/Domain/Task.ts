@@ -82,7 +82,7 @@ export class Task extends AggregateRoot<TaskProps> {
     return this.props.status.isFinished();
   }
 
-  protected updateStatus(callback: (TaskStatus) => Result<TaskStatus>): Result<void> {
+  protected updateStatus(callback: (TaskStatus: TaskStatus) => Result<TaskStatus>): Result<void> {
     const statusResult = callback(this.props.status);
     if (statusResult.isFailure) {
       return Result.fail(statusResult.getErrors());

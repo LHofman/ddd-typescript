@@ -9,20 +9,8 @@ export class CreateTaskCommandHandler implements ICreateTaskCommandHandler {
   constructor(private taskRepository: ITaskRepository) {}
   
   public async handle(command: CreateTaskCommandDTO): Promise<Result<Task>> {
-    const descriptionOrError = TaskDescription.create(command.description);
-    if (descriptionOrError.isFailure) {
-      return Result.fail<Task>(descriptionOrError.getErrors());
-    }
-    const description = descriptionOrError.getValue();
-
-    const taskOrError = Task.create({ description });
-    if (taskOrError.isFailure) {
-      return Result.fail<Task>(taskOrError.getErrors());
-    }
-    let task = taskOrError.getValue();
-
-    task = await this.taskRepository.save(task);
-
-    return Result.ok(task);
+    return TaskDescription.create(command.description)
+      .onSuccess((description) => Task.create({ description }))
+      .onSuccessAsync(this.taskRepository.save.bind(this.taskRepository));
   }
 }

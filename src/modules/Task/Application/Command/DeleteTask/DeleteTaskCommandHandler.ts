@@ -8,19 +8,7 @@ export class DeleteTaskCommandHandler implements IDeleteTaskCommandHandler {
   constructor(private taskRepository: ITaskRepository) {}
 
   public async handle(command: DeleteTaskCommandDTO): Promise<Result<void>> {
-    // Parse Task Id
-    const taskIdOrError = TaskId.create(command.id);
-    if (taskIdOrError.isFailure) {
-      return Result.fail<null>(taskIdOrError.getErrors());
-    }
-    const taskId = taskIdOrError.getValue();
-
-    // Fetch Aggregate
-    const deleteResult = await this.taskRepository.deleteTaskById(taskId);
-    if (deleteResult.isFailure) {
-      return Result.fail<null>(deleteResult.getErrors());
-    }
-
-    return Result.ok();
+    return TaskId.create(command.id)
+      .onSuccessAsync(this.taskRepository.deleteTaskById.bind(this.taskRepository));
   }
 }

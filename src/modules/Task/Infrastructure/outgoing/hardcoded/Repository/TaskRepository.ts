@@ -1,5 +1,4 @@
 import { Result } from '../../../../../../core/Logic/Result';
-import { Maybe } from '../../../../../../types';
 import { Task, TaskProps } from '../../../../Domain/Task';
 import { ITaskRepository } from '../../../../Domain/Repository/ITaskRepository';
 import { TaskDescription } from '../../../../Vocabulary/TaskDescription';
@@ -9,16 +8,17 @@ import { AggregateSnapshot } from '../../../../../../core/Domain/AggregateSnapsh
 import { TaskStatusFactory } from '../../../../Domain/Task/TaskStatus/TaskStatusFactory';
 
 export class TaskRepository implements ITaskRepository {
-  public async getTaskById(taskId: TaskId): Promise<Maybe<Task>> {
+  public async getTaskById(taskId: TaskId): Promise<Result<Task>> {
     const taskData = tasksData.find(j => j.id === taskId.getId());
     if (!taskData) {
-      return null;
+      return Result.fail('Task not found');
     }
 
-    return this.mapDataToTask(taskData);
+    const task = this.mapDataToTask(taskData);
+    return Result.ok(task);
   }
   
-  public async save(task: Task): Promise<Task> {
+  public async save(task: Task): Promise<Result<Task>> {
     const taskProps = task.toSnapshot().props;
     if (taskProps.id && await this.exists(taskProps.id)) {
       const taskIndex = tasksData.findIndex(j => j.id === taskProps.id?.getId());
@@ -26,7 +26,9 @@ export class TaskRepository implements ITaskRepository {
 
       this.saveSubTasks(taskProps.subTasks, taskProps.id);
 
-      return this.mapDataToTask(tasksData[taskIndex]);
+      const updatedTask = this.mapDataToTask(tasksData[taskIndex]);
+      
+      return Result.ok(updatedTask);
     }
 
     const highestId = tasksData.reduce((acc, curr) => curr.id > acc ? curr.id : acc, 0);
@@ -39,7 +41,9 @@ export class TaskRepository implements ITaskRepository {
 
     this.saveSubTasks(taskProps.subTasks, TaskId.create(newTaskId).getValue());
 
-    return this.mapDataToTask(tasksData.find(j => j.id === newTaskId));
+    const updatedTask = this.mapDataToTask(tasksData.find(j => j.id === newTaskId));
+    
+    return Result.ok(updatedTask);
   }
 
   private async saveSubTasks(subTasks: Task[], parentId: TaskId): Promise<void> {
@@ -53,7 +57,7 @@ export class TaskRepository implements ITaskRepository {
 
   public async deleteTaskById(taskId: TaskId): Promise<Result<void>> {
     if (!await this.exists(taskId)) {
-      return Result.fail<null>('Task not found');
+      return Result.fail('Task not found');
     }
 
     tasksData.splice(tasksData.findIndex(j => j.id === taskId.getId()), 1);

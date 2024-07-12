@@ -15,25 +15,22 @@ export class UpdateTaskCommandHandler implements IUpdateTaskCommandHandler {
 
   public async handle(command: UpdateTaskCommandDTO): Promise<Result<void>> {
     const taskResult = await this.getTaskAggregateResult(command.id);
-    if (taskResult.isFailure) {
-      return Result.fail(taskResult.getErrors());
-    }
-    let task = taskResult.getValue();
-    
-    // Validate Task Props
     const taskPropsOrError = this.validateTaskProps(command);
-    if (taskPropsOrError.isFailure) {
-      return Result.fail(taskPropsOrError.getErrors());
+
+    const combinedResult = Result.combine(taskResult, taskPropsOrError);
+    if (combinedResult.isFailure) {
+      return Result.fail(combinedResult.getErrors());
     }
+
+    const task = taskResult.getValue();
     const taskProps = taskPropsOrError.getValue();
 
-    // Update Aggregate
     const result = task.update(taskProps);
     if (result.isFailure) {
       return Result.fail(result.getErrors());
     }
 
-    task = await this.taskRepository.save(task);
+    await this.taskRepository.save(task);
 
     return Result.ok();
   }
@@ -44,33 +41,20 @@ export class UpdateTaskCommandHandler implements IUpdateTaskCommandHandler {
       return Result.fail(taskResult.getErrors());
     }
     const task = taskResult.getValue();
-    
-    // Update Aggregate
+
     const result = task.start();
     if (result.isFailure) {
       return Result.fail(result.getErrors());
     }
-
+    
     await this.taskRepository.save(task);
 
     return Result.ok();
   }
 
   private async getTaskAggregateResult(id: number): Promise<Result<Task>> {
-    // Parse Task Id
-    const taskIdOrError = TaskId.create(id);
-    if (taskIdOrError.isFailure) {
-      return Result.fail<Task>(taskIdOrError.getErrors());
-    }
-    const taskId = taskIdOrError.getValue();
-
-    // Fetch Aggregate
-    const task = await this.taskRepository.getTaskById(taskId);
-    if (!task) {
-      return Result.fail<Task>('Task not found');
-    }
-
-    return Result.ok<Task>(task);
+    return TaskId.create(id)
+      .onSuccessAsync<Task>(this.taskRepository.getTaskById.bind(this.taskRepository));
   }
 
   private validateTaskProps(command: UpdateTaskCommandDTO): Result<TaskProps> {
@@ -79,7 +63,7 @@ export class UpdateTaskCommandHandler implements IUpdateTaskCommandHandler {
     if (command.description) {
       const descriptionOrError = TaskDescription.create(command.description);
       if (descriptionOrError.isFailure) {
-        return Result.fail<TaskProps>(descriptionOrError.getErrors());
+        return Result.fail(descriptionOrError.getErrors());
       }
       props.description = descriptionOrError.getValue();
     }
