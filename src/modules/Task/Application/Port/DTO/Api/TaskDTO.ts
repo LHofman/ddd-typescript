@@ -1,5 +1,5 @@
 export interface TaskDTO {
-  id: number,
+  id: string,
   description: string,
   status: string,
   subTasks?: TaskDTO[],

@@ -23,20 +23,15 @@ router.get('/', async (req, res) => {
 router.get('/:id', async (req, res) => {
   const taskQuery = new TaskQuery();
 
-  if (isNaN(Number(req.params.id))) {
-    res.status(400).send('Invalid ID');
-    return;
-  }
-
-  const taskIdOrError = TaskId.create(Number(req.params.id));
+  const taskIdOrError = TaskId.create(req.params.id);
   if (taskIdOrError.isFailure) {
-    res.status(400).send('Invalid ID');
+    res.status(400).send(taskIdOrError.getErrors().join(', '));
     return;
   }
 
   const task = await taskQuery.findById(taskIdOrError.getValue());
   if (!task) {
-    res.status(404).send('Invalid ID');
+    res.status(404).send('Task not found');
     return;
   }
 
@@ -63,11 +58,7 @@ router.post('/', async (req, res) => {
 router.put('/:id/start', async (req, res) => {
   const updateTaskCommandHandler = new UpdateTaskCommandHandler(new TaskRepository());
 
-  const taskId = parseInt(req.params.id);
-  if (isNaN(taskId)) {
-    res.status(400).send('Invalid ID');
-    return;
-  }
+  const taskId = req.params.id;
 
   const result = await updateTaskCommandHandler.start(taskId);
   if (result.isFailure) {
@@ -81,15 +72,10 @@ router.put('/:id/start', async (req, res) => {
 router.put('/:id/addSubTask', async (req, res) => {
   const addSubTaskCommandHandler = new AddSubTaskCommandHandler(new TaskRepository());
 
-  const taskId = parseInt(req.params.id);
-  const subTaskId = parseInt(req.body.subTaskId);
+  const taskId = req.params.id;
+  const subTaskId = req.body.subTaskId;
   
-  if (isNaN(taskId) || isNaN(subTaskId)) {
-    res.status(400).send('Invalid ID');
-    return;
-  }
-
-  const addSubTaskCommandDTO: AddSubTaskCommandDTO = {id: taskId, subTaskId };
+  const addSubTaskCommandDTO: AddSubTaskCommandDTO = { id: taskId, subTaskId };
   const result = await addSubTaskCommandHandler.handle(addSubTaskCommandDTO);
   if (result.isFailure) {
     res.status(400).send(result.getErrors().join(', '));
@@ -102,11 +88,7 @@ router.put('/:id/addSubTask', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const updateTaskCommandHandler = new UpdateTaskCommandHandler(new TaskRepository());
 
-  const taskId = parseInt(req.params.id);
-  if (isNaN(taskId)) {
-    res.status(400).send('Invalid ID');
-    return;
-  }
+  const taskId = req.params.id;
 
   const updateTaskCommandDTO: UpdateTaskCommandDTO = {
     id: taskId,
@@ -124,11 +106,7 @@ router.put('/:id', async (req, res) => {
 router.delete('/:id', (req, res) => {
   const deleteTaskCommandHandler = new DeleteTaskCommandHandler(new TaskRepository());
 
-  const taskId = parseInt(req.params.id);
-  if (isNaN(taskId)) {
-    res.status(400).send('Invalid ID');
-    return;
-  }
+  const taskId = req.params.id;
 
   const deleteTaskCommandDTO: DeleteTaskCommandDTO = { id: taskId };
 

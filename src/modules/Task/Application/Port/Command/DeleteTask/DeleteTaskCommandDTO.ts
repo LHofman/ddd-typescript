@@ -1,3 +1,3 @@
 export interface DeleteTaskCommandDTO {
-  id: number;
+  id: string;
 }

@@ -10,7 +10,7 @@ describe('Start task', () => {
     expect(res.statusCode).toEqual(200);
     expect(res.text).toEqual('Task successfully started');
 
-    const getRes = await request(app).get('/tasks/1');
+    const getRes = await request(app).get(`/tasks/${taskId}`);
     expect(getRes.body.status).toEqual('In Progress');
   });
 

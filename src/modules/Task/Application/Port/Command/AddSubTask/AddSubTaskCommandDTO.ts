@@ -1,4 +1,4 @@
 export interface AddSubTaskCommandDTO {
-  id: number;
-  subTaskId: number;
+  id: string;
+  subTaskId: string;
 }

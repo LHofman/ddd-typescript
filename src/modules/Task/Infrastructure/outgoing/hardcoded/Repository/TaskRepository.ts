@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Result } from '../../../../../../core/Logic/Result';
 import { Task, TaskProps } from '../../../../Domain/Task';
 import { ITaskRepository } from '../../../../Domain/Repository/ITaskRepository';
@@ -31,8 +32,7 @@ export class TaskRepository implements ITaskRepository {
       return Result.ok(updatedTask);
     }
 
-    const highestId = tasksData.reduce((acc, curr) => curr.id > acc ? curr.id : acc, 0);
-    const newTaskId = highestId + 1;
+    const newTaskId = uuidv4();
 
     tasksData.push({
       ...this.mapTaskPropsToData(taskProps),
@@ -50,7 +50,9 @@ export class TaskRepository implements ITaskRepository {
     if (!subTasks) return;
     
     subTasks.forEach((subTask) => {
-      const subTaskIndex = tasksData.findIndex((task) => task.id === subTask.toSnapshot().props.id.getId());
+      const subTaskIndex = tasksData.findIndex(
+        (task) => task.id === subTask.toSnapshot().props.id.getId()
+      );
       tasksData[subTaskIndex].parentId = parentId.getId();
     });
   }

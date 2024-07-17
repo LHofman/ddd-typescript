@@ -1,4 +1,4 @@
 export interface UpdateTaskCommandDTO {
-  id: number;
+  id: string;
   description?: string;
 }

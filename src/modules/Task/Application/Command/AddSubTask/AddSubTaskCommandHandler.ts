@@ -32,7 +32,7 @@ export class AddSubTaskCommandHandler implements IAddSubTaskCommandHandler {
     return Result.ok();
   }
 
-  private async getTaskAggregateResult(id: number): Promise<Result<Task>> {
+  private async getTaskAggregateResult(id: string): Promise<Result<Task>> {
     return TaskId.create(id)
       .onSuccessAsync((taskId) => this.taskRepository.getTaskById(taskId));
   }

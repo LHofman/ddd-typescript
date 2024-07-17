@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { AggregateSnapshot } from '../../../../src/core/Domain/AggregateSnapshot';
 import { Task, TaskProps } from '../../../../src/modules/Task/Domain/Task';
 import { TaskStatusFactory } from '../../../../src/modules/Task/Domain/Task/TaskStatus/TaskStatusFactory';
@@ -41,12 +42,12 @@ describe('Complete task', () => {
       RawTaskStatus.InProgress,
       { subTasks: [
         Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
-          id: TaskId.create(999123).getValue(),
+          id: TaskId.create(uuidv4()).getValue(),
           description: TaskDescription.create("Sub Task 1").getValue(),
           status: TaskStatusFactory.create(RawTaskStatus.Done).getValue(),
         })),
         Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
-          id: TaskId.create(999124).getValue(),
+          id: TaskId.create(uuidv4()).getValue(),
           description: TaskDescription.create("Sub Task 2").getValue(),
           status: TaskStatusFactory.create(RawTaskStatus.Done).getValue(),
         })),
@@ -63,12 +64,12 @@ describe('Complete task', () => {
       RawTaskStatus.InProgress,
       { subTasks: [
         Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
-          id: TaskId.create(999123).getValue(),
+          id: TaskId.create(uuidv4()).getValue(),
           description: TaskDescription.create("Sub Task 1").getValue(),
           status: TaskStatusFactory.create(RawTaskStatus.Done).getValue(),
         })),
         Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
-          id: TaskId.create(999124).getValue(),
+          id: TaskId.create(uuidv4()).getValue(),
           description: TaskDescription.create("Sub Task 2").getValue(),
           status: TaskStatusFactory.create(RawTaskStatus.ToDo).getValue(),
         })),
@@ -86,7 +87,7 @@ describe('Complete task', () => {
       RawTaskStatus.InProgress,
       { subTasks: [
         Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
-          id: TaskId.create(999123).getValue(),
+          id: TaskId.create(uuidv4()).getValue(),
           description: TaskDescription.create("Sub Task 1").getValue(),
           status: TaskStatusFactory.create(RawTaskStatus.ToDo).getValue(),
           optional: true,

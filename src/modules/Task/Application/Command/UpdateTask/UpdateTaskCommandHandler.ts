@@ -35,7 +35,7 @@ export class UpdateTaskCommandHandler implements IUpdateTaskCommandHandler {
     return Result.ok();
   }
 
-  public async start(id: number): Promise<Result<void>> {
+  public async start(id: string): Promise<Result<void>> {
     const taskResult = await this.getTaskAggregateResult(id);
     if (taskResult.isFailure) {
       return Result.fail(taskResult.getErrors());
@@ -52,7 +52,7 @@ export class UpdateTaskCommandHandler implements IUpdateTaskCommandHandler {
     return Result.ok();
   }
 
-  private async getTaskAggregateResult(id: number): Promise<Result<Task>> {
+  private async getTaskAggregateResult(id: string): Promise<Result<Task>> {
     return TaskId.create(id)
       .onSuccessAsync<Task>(this.taskRepository.getTaskById.bind(this.taskRepository));
   }
