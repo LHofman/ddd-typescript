@@ -6,21 +6,21 @@ import { TaskDescription } from '../../../../src/modules/Task/Vocabulary/TaskDes
 import { TaskId } from '../../../../src/modules/Task/Vocabulary/TaskId';
 
 describe('Complete task', () => {
-  test('completeing a task in status To Do should update the status to Done', async () => {
+  test('completing a task in status To Do should update the status to Done', async () => {
     const task = getTask(RawTaskStatus.ToDo);
     const result = task.complete();
     expect(result.isFailure).toBeFalsy();
     expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.Done);
   });
 
-  test('completeing a task in status In Progress should update the status to Done', async () => {
+  test('completing a task in status In Progress should update the status to Done', async () => {
     const task = getTask(RawTaskStatus.InProgress);
     const result = task.complete();
     expect(result.isFailure).toBeFalsy();
     expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.Done);
   });
 
-  test('completeing a task in status Waiting for Start should fail', async () => {
+  test('completing a task in status Waiting for Start should fail', async () => {
     const task = getTask(RawTaskStatus.WaitingForStart);
     const result = task.complete();
     expect(result.isFailure).toBeTruthy();
@@ -28,7 +28,7 @@ describe('Complete task', () => {
     expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.WaitingForStart);
   });
 
-  test('completeing a task in status Done should fail', async () => {
+  test('completing a task in status Done should fail', async () => {
     const task = getTask(RawTaskStatus.Done);
     const result = task.complete();
     expect(result.isFailure).toBeTruthy();
@@ -36,7 +36,7 @@ describe('Complete task', () => {
     expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.Done);
   });
 
-  test('completeing a task with completed subTasks should update the status to Done', async () => {
+  test('completing a task with completed subTasks should update the status to Done', async () => {
     const task = getTask(
       RawTaskStatus.InProgress,
       { subTasks: [
@@ -58,7 +58,7 @@ describe('Complete task', () => {
     expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.Done);
   });
 
-  test('completeing a task with an incomplete subTask should fail', async () => {
+  test('completing a task with an incomplete subTask should fail', async () => {
     const task = getTask(
       RawTaskStatus.InProgress,
       { subTasks: [
@@ -79,6 +79,24 @@ describe('Complete task', () => {
     expect(result.isFailure).toBeTruthy();
     expect(result.getErrors()).toContain('Cannot complete a Task with unfinished subtasks');
     expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.InProgress);
+  });
+
+  test('completing a task with an incomplete optional subTask should update the status to Done', async () => {
+    const task = getTask(
+      RawTaskStatus.InProgress,
+      { subTasks: [
+        Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
+          id: TaskId.create(999123).getValue(),
+          description: TaskDescription.create("Sub Task 1").getValue(),
+          status: TaskStatusFactory.create(RawTaskStatus.ToDo).getValue(),
+          optional: true,
+        })),
+      ] }
+    );
+
+    const result = task.complete();
+    expect(result.isFailure).toBeFalsy();
+    expect(task.toSnapshot().props.status.getRaw()).toBe(RawTaskStatus.Done);
   });
 });
 

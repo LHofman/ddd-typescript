@@ -11,6 +11,7 @@ export interface TaskProps {
   description: TaskDescription;
   status: TaskStatus;
   subTasks?: Task[];
+  optional?: boolean;
 }
 
 export interface CreateTaskProps {
@@ -70,12 +71,18 @@ export class Task extends AggregateRoot<TaskProps> {
   }
 
   public complete(): Result<void> {
-    const hasUnfinishedSubtasks = this.props.subTasks?.some((subTask) => !subTask.isFinished());
+    const hasUnfinishedSubtasks = this.props.subTasks?.some(
+      (subTask) => !subTask.isFinished() && subTask.isRequired()
+    );
     if (hasUnfinishedSubtasks) {
       return Result.fail('Cannot complete a Task with unfinished subtasks');  
     }
 
     return this.updateStatus((status) => status.complete());
+  }
+
+  public isRequired(): boolean {
+    return !(this.props.optional ?? false);
   }
 
   public isFinished(): boolean {

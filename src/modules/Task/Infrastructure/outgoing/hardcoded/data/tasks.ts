@@ -3,6 +3,7 @@ export interface RawTask {
   description: string;
   status: RawTaskStatus;
   parentId?: number;
+  optional?: boolean;
 }
 
 export enum RawTaskStatus {
@@ -16,12 +17,12 @@ export const tasksData: RawTask[] = [
   {
     id: 1,
     description: "Build House",
-    status: RawTaskStatus.InProgress
+    status: RawTaskStatus.InProgress,
   },
   {
     id: 101,
     description: "Get a Loan",
-    status: RawTaskStatus.InProgress,
+    status: RawTaskStatus.Done,
     parentId: 1,
   },
   {
@@ -29,6 +30,7 @@ export const tasksData: RawTask[] = [
     description: "Buy furniture",
     status: RawTaskStatus.ToDo,
     parentId: 1,
+    optional: true,
   },
   {
     id: 103,
