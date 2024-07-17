@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { AggregateSnapshot } from '../../../../src/core/Domain/AggregateSnapshot';
 import { Task, TaskProps } from '../../../../src/modules/Task/Domain/Task';
 import { TaskStatusFactory } from '../../../../src/modules/Task/Domain/Task/TaskStatus/TaskStatusFactory';
@@ -7,7 +8,11 @@ import { TaskDescription } from '../../../../src/modules/Task/Vocabulary/TaskDes
 describe('Add Subtask', () => {
   test('adding a subtask should work', async () => {
     const task = getTask(RawTaskStatus.InProgress);
-    const subTask = Task.create({ description: TaskDescription.create("Sub Task").getValue() }).getValue();
+    const subTask = Task.fromSnapshot(new AggregateSnapshot<TaskProps>({
+      id: uuidv4(),
+      description: TaskDescription.create("Sub Task").getValue(),
+      status: TaskStatusFactory.create(RawTaskStatus.ToDo).getValue(),
+    }));
     const result = task.addSubTask(subTask);
     expect(result.isFailure).toBeFalsy();
 
